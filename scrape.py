@@ -106,7 +106,6 @@ def scrape_news_article_links(filename, start_link_number=None):
                     data_links['center'].add(link.get('href'))
 
         if i % 60 == 0:
-            pprinter.pprint(data_links)
             with open('data/right.txt', 'a') as right:
                 right.writelines(["%s\n" % item  for item in list(data_links['right'])])
             with open('data/left.txt', 'a') as left:
@@ -119,7 +118,6 @@ def scrape_news_article_links(filename, start_link_number=None):
         # Required in allsides.com robots.txt
         time.sleep(10)
     
-    pprinter.pprint(data_links)
     with open('data/right.txt', 'a') as right:
         right.writelines(["%s\n" % item  for item in list(data_links['right'])])
     with open('data/left.txt', 'a') as left:
