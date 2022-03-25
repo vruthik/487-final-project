@@ -9,7 +9,7 @@
 
 
 ## scrape.py
-```python scrape.py internal```
+```python scrape.py internal```  
 ```python scrape.py articles internal_links.txt```
 
 
