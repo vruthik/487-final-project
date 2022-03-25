@@ -22,7 +22,7 @@ Runs scrape.py to gather internal allsides.com links to webpages that have the l
 ```python scrape.py internal last_topic```  
 Runs scrape.py like above, except it starts scraping link from last_topic onwards (inclusive). Meant to be used in case the scraper crashes midway.
 
-<ins>**scrape_news_article_links()**</ins>
+<ins>**scrape_news_article_links()**</ins>  
 Gathers the external article link from the allsides article along with the media bias rating of the website 
 Based on the media bias rating, the gathered article links are written to either right.txt, left.txt or center.txt
 Scraping output is written to right.txt, left.txt and center.txt every 60 iterations (approx every 10 minutes) in case of a crash
