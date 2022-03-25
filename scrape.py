@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import pprint
 import time
+import os
 
 def scrape_allsides_internal_links(last_topic=None):
     """
@@ -34,7 +35,7 @@ def scrape_allsides_internal_links(last_topic=None):
 
     for i, key in enumerate(topics_url.keys()):
         allsides_links = set()
-        print('Topic', i  + ":", key)
+        print('Topic', str(i)  + ":", key)
 
         with open ('internal_links.txt', 'a') as file:
             url = 'https://www.allsides.com/topics/' + key + '?search=' + topics_url[key]
@@ -50,24 +51,43 @@ def scrape_allsides_internal_links(last_topic=None):
             allsides_links = list(allsides_links)
             file.writelines(["%s\n" % item  for item in allsides_links])
         
-        # Required in robots.txt
+        # Required in allsides.com robots.txt
         time.sleep(10)
 
-def scrape_news_article_links(filename):
+def scrape_news_article_links(filename, start_link_number=None):
+
+    """
+    Gathers the external article link from the allsides article along with the media bias rating of the website 
+    Based on the media bias rating, the gathered article links are written to either right.txt, left.txt or center.txt
+    Scraping output is written to right.txt, left.txt and center.txt every 60 iterations (approx every 10 minutes) in case of a crash
+
+    filename: the name of the text file that contains all of the allsides internal links from scrape_allsides_internal_links()
+    start_link_number: In case of a crash, the program can be restarted at start_link_number (inclusive) to avoid having to rerun the entire program
+    """
+
+    pprinter = pprint.PrettyPrinter()
 
     allsides_links = set()
 
-    with open(filename, 'r') as file:
+    with open(os.path.join("data", filename), 'r') as file:
         links = file.readlines()
         for link in links:
-            allsides_links.add(link.replace("\n", ""))
+            allsides_links.add(link.strip().replace("\n", ""))
 
     allsides_links = list(allsides_links)
-    data_links = {'right': set(), 'left': set(), 'center': set()}
     
+    if start_link_number is not None:
+        assert(start_link_number < len(allsides_links))
+        allsides_links = allsides_links[start_link_number:]
+
+    data_links = {'right': set(), 'left': set(), 'center': set()}
+
     print("----- Scraping news article links from", len(allsides_links), "internal links -----")
     for i, url in enumerate(allsides_links):
-        print(i,":", url)
+        if start_link_number is not None:
+            print(i + start_link_number,":", url)
+        else:
+            print(i,":", url)
 
         r_ = requests.get(url)
         soup_ = BeautifulSoup(r_.text, 'html.parser')
@@ -85,8 +105,28 @@ def scrape_news_article_links(filename):
                 elif rating == 'AllSides Media Bias Rating: Center':
                     data_links['center'].add(link.get('href'))
 
-        # Required in robots.txt
+        if i % 60 == 0:
+            pprinter.pprint(data_links)
+            with open('data/right.txt', 'a') as right:
+                right.writelines(["%s\n" % item  for item in list(data_links['right'])])
+            with open('data/left.txt', 'a') as left:
+                left.writelines(["%s\n" % item  for item in list(data_links['left'])])
+            with open('data/center.txt', 'a') as center:
+                center.writelines(["%s\n" % item for item in list(data_links['center'])])
+            data_links = {'right': set(), 'left': set(), 'center': set()}
+            
+
+        # Required in allsides.com robots.txt
         time.sleep(10)
+    
+    pprinter.pprint(data_links)
+    with open('data/right.txt', 'a') as right:
+        right.writelines(["%s\n" % item  for item in list(data_links['right'])])
+    with open('data/left.txt', 'a') as left:
+        left.writelines(["%s\n" % item  for item in list(data_links['left'])])
+    with open('data/center.txt', 'a') as center:
+        center.writelines(["%s\n" % item for item in list(data_links['center'])])
+
 
 if __name__ == "__main__":
     # scrape(sys.argv[1])
@@ -95,5 +135,9 @@ if __name__ == "__main__":
             scrape_allsides_internal_links(sys.argv[2])
         else:
             scrape_allsides_internal_links()
+
     elif sys.argv[1] == 'articles':
-        scrape_news_article_links(sys.argv[2])
+        if len(sys.argv) > 3:
+            scrape_news_article_links(sys.argv[2]. sys.argv[3])
+        else:
+            scrape_news_article_links(sys.argv[2])
