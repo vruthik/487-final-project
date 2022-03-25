@@ -5,32 +5,40 @@ import pandas as pd
 import pprint
 import time
 
-def scrape():
+def scrape_allsides_internal_links(last_topic=None):
+    """
+    Scrapes the internal allsides links for each of the topics on the website and writes them to internal_links.txt
+    Scraping output is written to internal_links.txt everytime a topic is complete to prevent restarting
+    
+    last_topic: In case of a program crash, to prevent restarting from the first topic, the program will resume from last_topic onwards (inclusive)
+    """
+
     pprinter = pprint.PrettyPrinter()
-    # TODO: Add functionality to scrape allsides.com
-
-    # topics = {
-    #     '2022-elections': '2022%20elections'
-    # }
-
+    
     topics = ["2022 Elections", "Abortion", "Africa", "Agriculture", "Animal Welfare", "Arts and Entertainment", "Asia", "Australia", "Banking and Finance", "Bridging Divides", "Business", "Campaign Finance", "Campaign Rhetoric", "Capital Punishment and Death Penalty", "China", "CIA", "Civil Rights", "Coronavirus", "Criminal Justice", "Culture", "Cybersecurity", "DEA", "Defense and Security", "Defense Department", "Democratic Party", "Disaster", "Domestic Policy", "Economic Policy", "Economy and Jobs", "Education", "Elections", "Energy", "Environment", "EPA", "Ethnicity and Heritage", "Europe", "Fact Checking", "Fake News", "Family and Marriage", "FBI", "FDA", "Federal Budget", "Food", "Foreign Policy", "Free Speech", "General News", "George Floyd Protests", "Great Britain", "Gun Control and Gun Rights", "Healthcare", "History of Media Bias", "Holidays", "Homeland Security", "Housing and Homelessness", "Humor and Satire", "Immigration", "Impeachment", "Inequality", "ISIS", "Israel", "Justice", "Justice Department", "Kamala Harris", "Labor", "LGBTQ Issues", "Marijuana Legalization", "Media Bias", "Media Industry", "Mexico", "Middle East", "National Defense", "National Security", "North Korea", "NSA", "Nuclear Weapons", "Opioid Crisis", "Palestine", "People and Profit", "Polarization", "Politics", "Privacy", "Public Health", "Race and Racism", "Religion and Faith", "Republican Party", "Role of Government", "Russia", "Science", "Sexual Misconduct", "Social Security", "South Korea", "Sports", "State Department", "Supreme Court", "Sustainability", "Taxes", "Tea Party", "Technology", "Terrorism", "The Americas", "Trade", "Transportation", "Treasury", "US Census", "US Congress", "US Constitution", "US House", "US Military", "US Senate", "Veterans Affairs", "Violence in America", "Voting Rights and Voter Fraud", "Welfare", "White House", "Women's Issues", "World"]
+    
+    if last_topic is not None:
+        if last_topic in topics:
+            topics = topics[topics.index(last_topic):]
+    
+    # Format topic names for allsides urls
     topics_url = {}
     for topic in topics:
-        print(topic)
         topic = topic.split(" ")
         if len(topic) > 1:
             topics_url['-'.join(topic)] = "%20".join(topic)
         else:
             topics_url[topic[0]] = topic[0]
 
-    # pprinter.pprint(topics_url)
-    allsides_links = set()
-    data_links = {'right': set(), 'left': set(), 'center': set()}
+    print("----- Scraping Internal allsides.com links from", len(topics_url.keys()), "topics -----")
 
     for i, key in enumerate(topics_url.keys()):
-        if i == 0:
+        allsides_links = set()
+        print('Topic', i  + ":", key)
+
+        with open ('internal_links.txt', 'a') as file:
             url = 'https://www.allsides.com/topics/' + key + '?search=' + topics_url[key]
-            print(url)
+
             r = requests.get(url)
             soup = BeautifulSoup(r.text, 'html.parser')
 
@@ -38,10 +46,27 @@ def scrape():
                 for div in link.find_all("div", {"class": "news-title"}):
                     if 'www.allsides.com' in link.get('href') and 'news-source' not in link.get('href'):
                         allsides_links.add(link.get('href'))
+            
+            allsides_links = list(allsides_links)
+            file.writelines(["%s\n" % item  for item in allsides_links])
+        
+        # Required in robots.txt
+        time.sleep(10)
+
+def scrape_news_article_links(filename):
+
+    allsides_links = set()
+
+    with open(filename, 'r') as file:
+        links = file.readlines()
+        for link in links:
+            allsides_links.add(link.replace("\n", ""))
 
     allsides_links = list(allsides_links)
-    print(len(allsides_links))
-    for i, url in enumerate(allsides_links[:10]):
+    data_links = {'right': set(), 'left': set(), 'center': set()}
+    
+    print("----- Scraping news article links from", len(allsides_links), "internal links -----")
+    for i, url in enumerate(allsides_links):
         print(i,":", url)
 
         r_ = requests.get(url)
@@ -60,35 +85,15 @@ def scrape():
                 elif rating == 'AllSides Media Bias Rating: Center':
                     data_links['center'].add(link.get('href'))
 
+        # Required in robots.txt
         time.sleep(10)
-
-    print(data_links)
-
-
-    # print(soup_)
-            
-                # for img in link.find_all('img', alt=True):
-                #     rating = img['alt']
-                #     print(rating, print(link))
-                #     print("-------------")
-
-                    # if rating != "" and 'AllSides Media Bias Rating' in rating:
-                    #     if rating == 'AllSides Media Bias Rating: Lean Right' or rating == 'AllSides Media Bias Rating: Right':
-                    #         allsides_links['right'].add(link.get('href'))
-                    #     elif rating == 'AllSides Media Bias Rating: Lean Left' or rating == 'AllSides Media Bias Rating: Left':
-                    #         allsides_links['left'].add(link.get('href'))
-                    #     elif rating == 'AllSides Media Bias Rating: Center':
-                    #         allsides_links['center'].add(link.get('href'))
-
-            # pprinter.pprint(allsides_links)
-                #     print()
-                #     # for img in div.find_all('img', alt=True):
-                #     #     print(img)
-                #     print(div)
-                # if 'AllSides Media Bias Rating: Center' in link['img alt']:
-                #     print(link.image)
-                #     print('-----------------------')
 
 if __name__ == "__main__":
     # scrape(sys.argv[1])
-    scrape()
+    if sys.argv[1] == 'internal':
+        if len(sys.argv) > 2:
+            scrape_allsides_internal_links(sys.argv[2])
+        else:
+            scrape_allsides_internal_links()
+    elif sys.argv[1] == 'articles':
+        scrape_news_article_links(sys.argv[2])
