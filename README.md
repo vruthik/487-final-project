@@ -36,6 +36,17 @@ Usage:
 ```python scrape.py article filename start_link_number```
 
 
+```
+scrape_raw_text()
+```
+Scrapes the raw text from the article links gathered from allsides.com in ```scrape_news_article_links()```. It also balances the dataset to include the same number of urls for each class.
+
+It utilizes a vectorized scraping function so if program crashes it has to be restarted.  
+
+Usage:
+```python scrape.py text```
+
+
 ## naivebayes.py
 
 ## eval.py
