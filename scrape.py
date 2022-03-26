@@ -77,15 +77,15 @@ def scrape_news_article_links(filename, start_link_number=None):
     allsides_links = list(allsides_links)
     
     if start_link_number is not None:
-        assert(start_link_number < len(allsides_links))
-        allsides_links = allsides_links[start_link_number:]
+        assert(int(start_link_number) < len(allsides_links))
+        allsides_links = allsides_links[int(start_link_number):]
 
     data_links = {'right': set(), 'left': set(), 'center': set()}
 
     print("----- Scraping news article links from", len(allsides_links), "internal links -----")
     for i, url in enumerate(allsides_links):
         if start_link_number is not None:
-            print(i + start_link_number,":", url)
+            print(i + int(start_link_number),":", url)
         else:
             print(i,":", url)
 
@@ -116,7 +116,7 @@ def scrape_news_article_links(filename, start_link_number=None):
             
 
         # Required in allsides.com robots.txt
-        time.sleep(10)
+        # time.sleep(8)
     
     with open('data/right.txt', 'a') as right:
         right.writelines(["%s\n" % item  for item in list(data_links['right'])])
@@ -136,6 +136,6 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == 'articles':
         if len(sys.argv) > 3:
-            scrape_news_article_links(sys.argv[2]. sys.argv[3])
+            scrape_news_article_links(sys.argv[2], sys.argv[3])
         else:
             scrape_news_article_links(sys.argv[2])
