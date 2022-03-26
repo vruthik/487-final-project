@@ -5,6 +5,7 @@ import pandas as pd
 import pprint
 import time
 import os
+import numpy as np
 
 def scrape_allsides_internal_links(last_topic=None):
     """
@@ -116,7 +117,7 @@ def scrape_news_article_links(filename, start_link_number=None):
             
 
         # Required in allsides.com robots.txt
-        # time.sleep(8)
+        # time.sleep(10)
     
     with open('data/right.txt', 'a') as right:
         right.writelines(["%s\n" % item  for item in list(data_links['right'])])
@@ -124,6 +125,36 @@ def scrape_news_article_links(filename, start_link_number=None):
         left.writelines(["%s\n" % item  for item in list(data_links['left'])])
     with open('data/center.txt', 'a') as center:
         center.writelines(["%s\n" % item for item in list(data_links['center'])])
+
+def scrape_single_text(url):
+    r = requests.get(url)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    return soup.text
+
+scrape_vec = np.vectorize(scrape_single_text)
+
+def scrape_raw_text():
+    files = ['data/right.txt', 'data/left.txt', 'data/center.txt']
+    frames = []
+    for file in files:
+        with open(file, 'r') as f:
+            label = file[5:].replace(".txt", "")
+
+            lines = f.readlines()
+            lines = [line.strip().replace('\n', '') for line in lines]
+            df = pd.DataFrame({'urls':lines, 'label': [label]*len(lines)})
+            frames.append(df)
+    
+    shortest_length = min(frames[0].shape[0], frames[1].shape[0], frames[2].shape[0])
+    balanced_frames = []
+    for df in frames:
+        df = df.sample(n=shortest_length)
+        balanced_frames.append(df)
+    
+    df = pd.concat(balanced_frames)
+
+    df['text'] = scrape_vec(df['urls'])
+    df.to_csv("data/article_data.csv", index=False)
 
 
 if __name__ == "__main__":
@@ -139,3 +170,6 @@ if __name__ == "__main__":
             scrape_news_article_links(sys.argv[2], sys.argv[3])
         else:
             scrape_news_article_links(sys.argv[2])
+    
+    elif sys.argv[1] == 'text': 
+        scrape_raw_text()
