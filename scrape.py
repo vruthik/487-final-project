@@ -149,18 +149,28 @@ def scrape_raw_text():
     for df in frames:
         df = df.sample(n=shortest_length)
         balanced_frames.append(df)
-    
-    df = pd.concat(balanced_frames)
-    df['text'] = ''
-    for i, url in enumerate(df['urls']):
-        print(i)
-        r = requests.get(url)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        df['text'][i] = soup.text
-        if i % 100 == 0:
-            df.to_csv("data/article_data.csv", index=False)
-    
-    df.to_csv("data/article_data.csv", index=False)
+
+    labels = ['right', 'left', 'center']
+    for label_, df in enumerate(balanced_frames):
+        text = []
+        num_error = 0
+        for i, url in enumerate(df['urls']):
+            if i % 50 == 0:
+                print('iteration ' + str(i) + ': ' + str((i/df.shape[0]) *100) + " percent done")
+            
+            r = requests.get(url)
+            if r.status_code != 404:
+                soup = BeautifulSoup(r.text, 'html.parser')
+
+                text.append(str(soup.text).rstrip().replace('\n', ' '))
+            else:
+                # print('error')
+                num_error += 1
+                text.append('error')
+
+        print(num_error / df.shape[0])
+        df['text'] = text
+        df.to_csv("data/" + labels[label_] + ".csv", index=False)
 
 
 if __name__ == "__main__":
