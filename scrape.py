@@ -107,24 +107,23 @@ def scrape_news_article_links(filename, start_link_number=None):
                     data_links['center'].add(link.get('href'))
 
         if i % 60 == 0:
-            with open('data/right.txt', 'a') as right:
-                right.writelines(["%s\n" % item  for item in list(data_links['right'])])
-            with open('data/left.txt', 'a') as left:
-                left.writelines(["%s\n" % item  for item in list(data_links['left'])])
-            with open('data/center.txt', 'a') as center:
-                center.writelines(["%s\n" % item for item in list(data_links['center'])])
+            files = ['data/right.txt', 'data/left.txt', 'data/center.txt']
+            for file in files:
+                with open(file, 'r') as f:
+                    label = file[5:].replace(".txt", "")
+                    f.writelines(["%s\n" % item  for item in list(data_links[label])])
             data_links = {'right': set(), 'left': set(), 'center': set()}
             
 
         # Required in allsides.com robots.txt
         # time.sleep(10)
     
-    with open('data/right.txt', 'a') as right:
-        right.writelines(["%s\n" % item  for item in list(data_links['right'])])
-    with open('data/left.txt', 'a') as left:
-        left.writelines(["%s\n" % item  for item in list(data_links['left'])])
-    with open('data/center.txt', 'a') as center:
-        center.writelines(["%s\n" % item for item in list(data_links['center'])])
+    files = ['data/right.txt', 'data/left.txt', 'data/center.txt']
+    for file in files:
+        with open(file, 'r') as f:
+            label = file[5:].replace(".txt", "")
+            f.writelines(["%s\n" % item  for item in list(data_links[label])])
+
 
 def scrape_single_text(url):
     r = requests.get(url)
@@ -152,24 +151,34 @@ def scrape_raw_text():
         balanced_frames.append(df)
     
     df = pd.concat(balanced_frames)
-
-    df['text'] = scrape_vec(df['urls'])
+    df['text'] = ''
+    for i, url in enumerate(df['urls']):
+        print(i)
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        df['text'][i] = soup.text
+        if i % 100 == 0:
+            df.to_csv("data/article_data.csv", index=False)
+    
     df.to_csv("data/article_data.csv", index=False)
 
 
 if __name__ == "__main__":
-    # scrape(sys.argv[1])
+    
+    # scrape_allsides_internal_links()
     if sys.argv[1] == 'internal':
         if len(sys.argv) > 2:
             scrape_allsides_internal_links(sys.argv[2])
         else:
             scrape_allsides_internal_links()
 
+    # scrape_news_article_links()
     elif sys.argv[1] == 'articles':
         if len(sys.argv) > 3:
             scrape_news_article_links(sys.argv[2], sys.argv[3])
         else:
             scrape_news_article_links(sys.argv[2])
     
+    # scrape_raw_text()
     elif sys.argv[1] == 'text': 
         scrape_raw_text()
