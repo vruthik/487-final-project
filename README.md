@@ -3,8 +3,9 @@
 ## TODO
 - [X] Implement crawler and scraper  
 - [ ] Implement Preprocessor  
-- [ ] Implement baseline Naive Bayes model  
-- [ ] Implement evaluation metrics   
+- [X] Implement baseline Naive Bayes model  
+- [X] Implement evaluation metrics  
+- [ ] Implement Bert Embeddings based linear model 
 
 ## scrape.py
 
