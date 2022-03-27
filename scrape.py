@@ -6,6 +6,7 @@ import pprint
 import time
 import os
 import numpy as np
+import re
 
 def scrape_allsides_internal_links(last_topic=None):
     """
@@ -145,32 +146,88 @@ def scrape_raw_text():
             frames.append(df)
     
     shortest_length = min(frames[0].shape[0], frames[1].shape[0], frames[2].shape[0])
-    balanced_frames = []
-    for df in frames:
-        df = df.sample(n=shortest_length)
-        balanced_frames.append(df)
 
-    labels = ['right', 'left', 'center']
-    for label_, df in enumerate(balanced_frames):
-        text = []
-        num_error = 0
-        for i, url in enumerate(df['urls']):
-            if i % 50 == 0:
-                print('iteration ' + str(i) + ': ' + str((i/df.shape[0]) *100) + " percent done")
+    whitelisted = [['www.foxnews.com', 'www.washingtonexaminer.com', 'www.nationalreview.com', 'nypost.com', 'www.washingtontimes.com'], ['www.nytimes.com', 'www.cnn.com', 'www.politico.com', 'www.nbcnews.com', 'www.npr.org'], ['www.axios.com', 'www.wsj.com', 'www.csmonitor.com', 'apnews.com', 'www.pewresearch.org']]
+    
+    urls = [[], [], []]
+    for i, df in enumerate(frames):
+        for url in df['urls']:
+            domain = re.findall(r"\bhttps://\b(.*?)\b/\b", url)
+            if len(domain) == 0:
+                domain = re.findall(r"\bhttp://\b(.*?)\b/\b", url)
             
-            r = requests.get(url)
-            if r.status_code != 404:
-                soup = BeautifulSoup(r.text, 'html.parser')
+            if len(domain) > 0:
+                if domain[0] in whitelisted[i]:
+                    urls[i].append(url)
+    
+    labels = ['right', 'left', 'center']
+    for label, url_list in enumerate(urls):
 
+        labels = [labels[label]] * len(url_list)
+        text = []
+        print(labels[label])
+        print(len(url_list))
+
+        for i, url in enumerate(url_list):
+            print(i, url)
+            try:
+                r = requests.get(url)
+                
+            except requests.exceptions.RequestException:
+                text.append('error')
+                continue
+
+            if r.status_code != 404 and r.status_code != 403:
+                soup = BeautifulSoup(r.text, 'html.parser')
                 text.append(str(soup.text).rstrip().replace('\n', ' '))
             else:
                 # print('error')
-                num_error += 1
                 text.append('error')
+        
+        sub_df = pd.DataFrame({'urls': url_list, 'label': labels, 'text': text})
+        sub_df.to_csv("data/" + labels[label] + "_mini.csv", index=False)
 
-        print(num_error / df.shape[0])
-        df['text'] = text
-        df.to_csv("data/" + labels[label_] + ".csv", index=False)
+
+    
+    # for label_, df in enumerate(balanced_frames[1:]):
+    #     print(df['label'].head())
+    #     label_ = label_ + 1
+    #     print(labels[label_])
+    #     text = []
+    #     num_error = 0
+    #     df = df.sample(n=500)
+    #     start = time.time()
+    #     for i, url in enumerate(df['urls']):
+    #         # if i % 50 == 0:
+    #         #     print('iteration ' + str(i) + ': ' + str((i/df.shape[0]) *100) + " percent done in " + str(time.time() - start) + " seconds")
+    #         #     start = time.time()
+
+    #         if 'www.washingtonpost.com' not in url and 'www.miamiherald.com' not in url and 'www.usnews.com' not in url:
+    #             print(i, url, time.time() - start)
+    #             start = time.time()            
+    #             try:
+    #                 r = requests.get(url)
+                
+    #             except requests.exceptions.RequestException:
+    #                 text.append('error')
+    #                 continue
+
+    #             if r.status_code != 404 and r.status_code != 403:
+    #                 soup = BeautifulSoup(r.text, 'html.parser')
+    #                 text.append(str(soup.text).rstrip().replace('\n', ' '))
+    #             else:
+    #                 # print('error')
+    #                 num_error += 1
+    #                 text.append('error')
+            
+    #         else:
+    #             print(i, url, time.time() - start)
+    #             start = time.time()
+    #             text.append("error")
+
+    #     print(num_error / df.shape[0])
+    #     df['text'] = text
+    #     df.to_csv("data/" + labels[label_] + ".csv", index=False)
 
 
 if __name__ == "__main__":
