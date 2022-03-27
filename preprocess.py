@@ -16,7 +16,12 @@ def get_domain(url):
 
 
 def ny_times_preprocess(text):
-    # print(text[-1000:])
+    starts = re.findall(r'Updated', text)
+    if len(starts) == 0:
+        starts = re.findall(r'Supported byContinue reading the main story', text)
+        print(starts)
+        # print(text[:500])
+    
     end_indexes = []
     for match in re.finditer(r'—', text):
         end_indexes.append(match.start())
@@ -29,11 +34,19 @@ def ny_times_preprocess(text):
         text = text[:end_indexes[-1]]
     return text
 
-df = pd.read_csv("data/mini_allsides/left_mini.csv")
+def apnews_preprocess(text, url):
+    starts = []
+    print(text[:1500])
+    for match in re.finditer(re.escape(url), text):
+        starts.append(match.end())
+    
+    print(starts)
+    print(text[starts[0]:500])
+    print("-----------------------------")
+
+df = pd.read_csv("data/mini_allsides/center_mini.csv")
 count = 0
 for row in df.iterrows():
-    if get_domain(row[1][0]) == 'www.nytimes.com':
-        output = ny_times_preprocess(row[1][2])
-        print(output[-500:])
-
+    if get_domain(row[1][0]) == 'apnews.com':
+        output = apnews_preprocess(row[1][2], row[1][0])
 
