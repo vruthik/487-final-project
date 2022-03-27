@@ -160,12 +160,13 @@ def scrape_raw_text():
                 if domain[0] in whitelisted[i]:
                     urls[i].append(url)
     
-    labels = ['right', 'left', 'center']
-    for label, url_list in enumerate(urls):
+    labels_names = ['right', 'center']
+    urls = [urls[0], urls[2]]
+    for label_, url_list in enumerate(urls):
 
-        labels = [labels[label]] * len(url_list)
+        labels = [labels_names[label_]] * len(url_list)
         text = []
-        print(labels[label])
+        print(labels_names[label_])
         print(len(url_list))
 
         for i, url in enumerate(url_list):
@@ -185,7 +186,7 @@ def scrape_raw_text():
                 text.append('error')
         
         sub_df = pd.DataFrame({'urls': url_list, 'label': labels, 'text': text})
-        sub_df.to_csv("data/" + labels[label] + "_mini.csv", index=False)
+        sub_df.to_csv("data/mini_allsides/" + labels_names[label_] + "_mini.csv", index=False)
 
 
     
