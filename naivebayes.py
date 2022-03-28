@@ -11,11 +11,14 @@ import pdb
 import chardet
 
 
-# def load_data(path):
-#     df = pd.read_csv(path)
-#     df = df.rename({'type': 'label'}, axis=1)
-#     df = df.rename({'article': 'text'}, axis=1)
-#     return df[['label', 'text']]
+def load_data(path):
+    df = pd.read_csv(path)
+    df = df.dropna()
+    # df = df.rename({'type': 'raw-label'}, axis=1)
+    df = df.rename({'article': 'text'}, axis=1)
+    df['label'] = df['type'].map({'center': 0, 'right': 1, 'left': 2})
+    print(f'text number of files: {len(df)}')
+    return df[['label', 'text']]
 
 
 class NaiveBayes():
@@ -49,7 +52,7 @@ class NaiveBayes():
         self.pred = self.clf.predict(X)
         self.true = test['label']
         return self.pred
-    
+
     def eval(self):
         eval = Evaluation(self.pred, self.true)
         eval.f1_score_micro()
@@ -57,12 +60,14 @@ class NaiveBayes():
         eval.acc()
 
 
-
 if __name__ == "__main__":
     path = 'data/MBIC/labeled_dataset.csv'
     data = load_data(path)
-    print(data.tolist())
-    train, test = train_test_split(
-        data, test_size=0.2, random_state=42)
+    train, test = train_test_split(data, test_size=0.2, random_state=42)
+    print(f'train data: {len(train)}; test data: {len(test)} ')
 
-    # print(data.head())
+    nb = NaiveBayes()
+    nb.preprocess(train)
+    nb.fit()
+    _ = nb.predict(test)
+    nb.eval()

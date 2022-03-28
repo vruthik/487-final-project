@@ -2,9 +2,10 @@
 
 ## TODO
 - [X] Implement crawler and scraper  
-- [ ] Implement Preprocessor  
-- [ ] Implement baseline Naive Bayes model  
-- [ ] Implement evaluation metrics   
+- [X] Implement baseline Naive Bayes model  
+- [X] Implement evaluation metrics  
+- [X] Implement Bert Embeddings based pytorch model 
+- [ ] Implement scraped data preprocessor  
 
 ## scrape.py
 
@@ -50,3 +51,8 @@ Usage:
 ## naivebayes.py
 
 ## eval.py
+
+## model.py
+Implements a pytorch based model using pre-trained BERT embeddings and 2 linear layers
+
+
