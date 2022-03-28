@@ -51,3 +51,8 @@ Usage:
 ## naivebayes.py
 
 ## eval.py
+
+## model.py
+Implements a pytorch based model using pre-trained BERT embeddings and 2 linear layers
+
+
