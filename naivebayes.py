@@ -55,9 +55,7 @@ class NaiveBayes():
 
     def eval(self):
         eval = Evaluation(self.pred, self.true)
-        eval.f1_score_micro()
-        eval.f1_score_macro()
-        eval.acc()
+        eval.all_metrics()
 
 
 if __name__ == "__main__":

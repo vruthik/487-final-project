@@ -31,4 +31,16 @@ class Evaluation():
         score = recall_score(self.true, self.pred, average='macro')
         print(f'Recall macro: {score}')    
 
+    def all_metrics(self):
+        self.acc()
+        print("-----------------------")
+        print("Macro")
+        self.f1_score_macro()
+        self.precision_macro()
+        self.recall_macro()
+        print("-----------------------")
+        print("Micro")
+        self.f1_score_micro()
+        self.precision_micro()
+        self.recall_micro()
 
