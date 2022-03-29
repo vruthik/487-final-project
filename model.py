@@ -60,7 +60,7 @@ class BertClassifier(nn.Module):
 
 def test_model(model, test_data, batch_size=2):
     test_data = Dataset(test_data)
-    test_dataloader = torch.utils.data.DataLoader(train, batch_size=batch_size, shuffle=True)
+    test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
