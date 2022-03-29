@@ -16,7 +16,7 @@ def load_data(path):
     df = df.dropna()
     # df = df.rename({'type': 'raw-label'}, axis=1)
     df = df.rename({'article': 'text'}, axis=1)
-    df['label'] = df['type'].map({'center': 0, 'right': 1, 'left': 2})
+    df['label'] = df['type'].map({'right': 0, 'left': 1, 'center': 2})
     print(f'text number of files: {len(df)}')
     return df[['label', 'text']]
 
