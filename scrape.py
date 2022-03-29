@@ -8,6 +8,8 @@ import os
 import numpy as np
 import re
 
+np.seed(487)
+
 def scrape_allsides_internal_links(last_topic=None):
     """
     Scrapes the internal allsides links for each of the topics on the website and writes them to internal_links.txt
@@ -134,6 +136,7 @@ def scrape_single_text(url):
 scrape_vec = np.vectorize(scrape_single_text)
 
 def scrape_raw_text():
+
     files = ['data/right.txt', 'data/left.txt', 'data/center.txt']
     frames = []
     for file in files:
@@ -145,90 +148,49 @@ def scrape_raw_text():
             df = pd.DataFrame({'urls':lines, 'label': [label]*len(lines)})
             frames.append(df)
     
-    shortest_length = min(frames[0].shape[0], frames[1].shape[0], frames[2].shape[0])
+    shortest_length = min(frames[0].shape[0], frames[1].shape[0], frames[2].shape[0])    
 
-    whitelisted = [['www.foxnews.com', 'www.washingtonexaminer.com', 'www.nationalreview.com', 'nypost.com', 'www.washingtontimes.com'], ['www.nytimes.com', 'www.cnn.com', 'www.politico.com', 'www.nbcnews.com', 'www.npr.org'], ['www.axios.com', 'www.wsj.com', 'www.csmonitor.com', 'apnews.com', 'www.pewresearch.org']]
-    
-    urls = [[], [], []]
+
+    balanced_frames = []
     for i, df in enumerate(frames):
-        for url in df['urls']:
-            domain = re.findall(r"\bhttps://\b(.*?)\b/\b", url)
-            if len(domain) == 0:
-                domain = re.findall(r"\bhttp://\b(.*?)\b/\b", url)
-            
-            if len(domain) > 0:
-                if domain[0] in whitelisted[i]:
-                    urls[i].append(url)
-    
-    labels_names = ['right', 'center']
-    urls = [urls[0], urls[2]]
-    for label_, url_list in enumerate(urls):
+        df = df.sample(n=shortest_length)
+        balanced_frames.append(df)
 
-        labels = [labels_names[label_]] * len(url_list)
+    labels = ['right', 'left', 'center']
+
+    for label_, df in enumerate(balanced_frames):
+        print(labels[label_])
         text = []
-        print(labels_names[label_])
-        print(len(url_list))
+        num_error = 0
+        df = df.sample(n=500)
+        start = time.time()
+        for i, url in enumerate(df['urls']):
+            if i % 50 == 0:
+                print('iteration ' + str(i) + ': ' + str((i/df.shape[0]) *100) + " percent done in " + str(time.time() - start) + " seconds")
+                start = time.time()
 
-        for i, url in enumerate(url_list):
-            print(i, url)
-            try:
-                r = requests.get(url)
+            if 'www.washingtonpost.com' not in url and 'www.miamiherald.com' not in url and 'www.usnews.com' not in url:
+                try:
+                    r = requests.get(url)
                 
-            except requests.exceptions.RequestException:
-                text.append('error')
-                continue
+                except requests.exceptions.RequestException:
+                    text.append('error')
+                    continue
 
-            if r.status_code != 404 and r.status_code != 403:
-                soup = BeautifulSoup(r.text, 'html.parser')
-                text.append(str(soup.text).rstrip().replace('\n', ' '))
-            else:
-                # print('error')
-                text.append('error')
-        
-        sub_df = pd.DataFrame({'urls': url_list, 'label': labels, 'text': text})
-        sub_df.to_csv("data/mini_allsides/" + labels_names[label_] + "_mini.csv", index=False)
-
-
-    
-    # for label_, df in enumerate(balanced_frames[1:]):
-    #     print(df['label'].head())
-    #     label_ = label_ + 1
-    #     print(labels[label_])
-    #     text = []
-    #     num_error = 0
-    #     df = df.sample(n=500)
-    #     start = time.time()
-    #     for i, url in enumerate(df['urls']):
-    #         # if i % 50 == 0:
-    #         #     print('iteration ' + str(i) + ': ' + str((i/df.shape[0]) *100) + " percent done in " + str(time.time() - start) + " seconds")
-    #         #     start = time.time()
-
-    #         if 'www.washingtonpost.com' not in url and 'www.miamiherald.com' not in url and 'www.usnews.com' not in url:
-    #             print(i, url, time.time() - start)
-    #             start = time.time()            
-    #             try:
-    #                 r = requests.get(url)
-                
-    #             except requests.exceptions.RequestException:
-    #                 text.append('error')
-    #                 continue
-
-    #             if r.status_code != 404 and r.status_code != 403:
-    #                 soup = BeautifulSoup(r.text, 'html.parser')
-    #                 text.append(str(soup.text).rstrip().replace('\n', ' '))
-    #             else:
-    #                 # print('error')
-    #                 num_error += 1
-    #                 text.append('error')
+                if r.status_code != 404 and r.status_code != 403:
+                    soup = BeautifulSoup(r.text, 'html.parser')
+                    text.append(str(soup.text).rstrip().replace('\n', ' '))
+                else:
+                    # print('error')
+                    num_error += 1
+                    text.append('error')
             
-    #         else:
-    #             print(i, url, time.time() - start)
-    #             start = time.time()
-    #             text.append("error")
+            else:
+                text.append("error")
 
-    #     print(num_error / df.shape[0])
-    #     df['text'] = text
-    #     df.to_csv("data/" + labels[label_] + ".csv", index=False)
+        print(num_error / df.shape[0])
+        df['text'] = text
+        df.to_csv("data/" + labels[label_] + ".csv", index=False)
 
 
 if __name__ == "__main__":
