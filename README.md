@@ -5,7 +5,8 @@
 - [X] Implement baseline Naive Bayes model  
 - [X] Implement evaluation metrics  
 - [X] Implement Bert Embeddings based pytorch model 
-- [ ] Implement scraped data preprocessor  
+- [ ] Hyperparameter tuning
+- [ ] Implement scraped data preprocessor
 
 ## scrape.py
 
@@ -47,12 +48,12 @@ It utilizes a vectorized scraping function so if program crashes it has to be re
 Usage:
 ```python scrape.py text```
 
+## model.py
+Implements a pytorch based model using pre-trained BERT embeddings and 2 linear layers
 
 ## naivebayes.py
 
 ## eval.py
 
-## model.py
-Implements a pytorch based model using pre-trained BERT embeddings and 2 linear layers
 
 

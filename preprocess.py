@@ -1,7 +1,16 @@
 import pandas as pd
 import re
+import numpy as np
 
+def remove_newlines(tweet):
+    tweet = str(tweet)
+    while "\n" in tweet:
+        tweet = tweet.replace('\n', "")
 
+    return tweet
+
+remove_newlines_vec = np.vectorize(remove_newlines)
+    
 def get_domain(url):
     domain = re.findall(r"\bhttps://\b(.*?)\b/\b", url)
             
@@ -44,9 +53,12 @@ def apnews_preprocess(text, url):
     print(text[starts[0]:500])
     print("-----------------------------")
 
-df = pd.read_csv("data/mini_allsides/center_mini.csv")
-count = 0
-for row in df.iterrows():
-    if get_domain(row[1][0]) == 'apnews.com':
-        output = apnews_preprocess(row[1][2], row[1][0])
+# df = pd.read_csv("data/mini_allsides/center_mini.csv")
+# count = 0
+# for row in df.iterrows():
+#     if get_domain(row[1][0]) == 'apnews.com':
+#         output = apnews_preprocess(row[1][2], row[1][0])
 
+# df = pd.read_csv('/Users/vruthikthakkar/Desktop/487-final-project/data/tweets.csv')
+# df['tweet'] = remove_newlines_vec(df['tweet'])
+# df.to_csv('/Users/vruthikthakkar/Desktop/487-final-project/data/tweets.csv', index=False)
