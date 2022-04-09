@@ -75,7 +75,7 @@ if __name__ == '__main__':
             i += 1
             row_items = row[1]
             text = get_user_tweets(row_items['username'])
-
+            
             for tweet in text:
                 tweet = re.sub(' +', ' ', tweet)
                 tweet = re.sub(r"http\S+", "", tweet)
