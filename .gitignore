@@ -3,3 +3,4 @@ credentials.py
 credentials.pyc
 __pycache__
 data/senators.csv
+.DS_Store
