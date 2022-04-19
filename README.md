@@ -9,6 +9,10 @@
 - [X] Implement twitter models
 - [X] Evaluate
 
+## model.py
+
+Contains all of the code for the Bert based linear model. The training and hyperparameter tuning code is in ```train_model.ipynb``` and ```train_tweet_model.ipynb```.
+
 ## scrape.py
 
 ```
