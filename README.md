@@ -13,6 +13,9 @@
 
 Contains all of the code for the Bert based linear model. The training and hyperparameter tuning code is in ```train_model.ipynb``` and ```train_tweet_model.ipynb```.
 
+## naivebayes.py
+Contains the code for the baseline naivebayes model. Training and testing code is in ```nb.ipynb``` 
+
 ## scrape.py
 
 ```
@@ -53,12 +56,7 @@ It utilizes a vectorized scraping function so if program crashes it has to be re
 Usage:
 ```python scrape.py text```
 
-## model.py
-Implements a pytorch based model using pre-trained BERT embeddings and 2 linear layers
-
-## naivebayes.py
-
 ## eval.py
-
+Contains an eval class to evaluate accuracy, macro and micro F1, recall and precision given predictions and labels. 
 
 
