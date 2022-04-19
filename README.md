@@ -4,9 +4,10 @@
 - [X] Implement crawler and scraper  
 - [X] Implement baseline Naive Bayes model  
 - [X] Implement evaluation metrics  
-- [X] Implement Bert Embeddings based pytorch model 
-- [ ] Hyperparameter tuning
-- [ ] Implement scraped data preprocessor
+- [X] Implement Bert based linear model 
+- [X] Hyperparameter tuning
+- [X] Implement twitter models
+- [X] Evaluate
 
 ## scrape.py
 
