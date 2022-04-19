@@ -16,6 +16,9 @@ Contains all of the code for the Bert based linear model. The training and hyper
 ## naivebayes.py
 Contains the code for the baseline naivebayes model. Training and testing code is in ```nb.ipynb``` 
 
+## twitter.py
+Contains the code to scrape recent tweets of all 100 US Senators and process them. 
+
 ## scrape.py
 
 ```
